@@ -65,8 +65,52 @@ df_data_fr_2020<-df_data_fr %>% filter((as.Date(jour) < as.Date("2021-01-01")) &
 df_data_fr_2021<-df_data_fr %>% filter((as.Date(jour) < as.Date("2022-01-01")) & (as.Date(jour) > as.Date("2020-12-31"))) 
 df_data_fr_2022<-df_data_fr %>% filter((as.Date(jour) < as.Date("2023-01-01")) & (as.Date(jour) > as.Date("2021-12-31"))) 
 
+# 2 - Construction des textes généraux ------------------------------------#
 
-# 2 - Construction des graphiques généraux ------------------------------------#
+Titre_nb_hosp_001 <- "Nombre de personne en hospitalisation:"
+Titre_nb_rea_001 <- "Nombre de personne en réanimation:"
+Titre_nb_dc_001 <- "Nombre de deces liee au Covid19:"
+
+Titre_nb_hosp_002 <- "Bilan total d'hospitalisation:"
+Titre_nb_rea_002 <- "Bilan total de personne en réanimation:"
+Titre_nb_dc_002 <- "Bilan total de décès liée au Covid19:"
+
+Today <- max(as.character.Date(df_data_fr$jour))
+Yesterday <- paste(format(as.Date(Today),"%Y-%m"),sep="")
+Titre_gen_recap_001 <- paste("Aujourd'hui :", Today )
+Titre_gen_recap_002 <- paste("Ce mois :", toupper(format(as.Date(Today),"%B")) )
+Titre_gen_recap_003 <- paste("Bilan de l'année 2022 :")
+Titre_gen_recap_004 <- paste("Bilan de l'année 2021 :")
+Titre_gen_recap_005 <- paste("Bilan de l'année 2020 :")
+
+# A ce jour
+nb_hosp_001 <- df_data_fr %>% filter(df_data_fr$jour == Today) %>% select(hosp) %>% as.character()
+nb_rea_001 <- df_data_fr %>% filter(df_data_fr$jour == Today) %>% select(rea) %>% as.character()
+nb_dc_001 <- df_data_fr %>% filter(df_data_fr$jour == Today) %>% select(dc)
+nb_dc_001 <- (nb_dc_001 - df_data_fr$dc[length(df_data_fr$dc)-1]) %>% as.character()
+  
+# Ce mois
+nb_hosp_002 <- df_data_fr %>% filter(format(as.Date(df_data_fr$jour),"%Y-%m") == format(as.Date(Today),"%Y-%m")) %>% select(hosp) %>% sum() %>% as.character()
+nb_rea_002 <- df_data_fr %>% filter(format(as.Date(df_data_fr$jour),"%Y-%m") == format(as.Date(Today),"%Y-%m")) %>% select(rea) %>% sum() %>% as.character()
+nb_dc_002 <- df_data_fr %>% filter(format(as.Date(df_data_fr$jour),"%Y-%m") == format(as.Date(Today),"%Y-%m")) 
+nb_dc_002 <- (nb_dc_002$dc[length(nb_dc_002$dc)] - nb_dc_002$dc[1]) %>% as.character()
+
+# 2022
+nb_hosp_003 <- sum(df_data_fr_2022$hosp) %>% as.character()
+nb_rea_003 <- sum(df_data_fr_2022$rea) %>% as.character()
+nb_dc_003 <- (df_data_fr_2022$dc[length(df_data_fr_2022$dc)] - df_data_fr_2022$dc[1]) %>% as.character()
+  
+# 2021
+nb_hosp_004 <- sum(df_data_fr_2021$hosp) %>% as.character()
+nb_rea_004 <- sum(df_data_fr_2021$rea) %>% as.character()
+nb_dc_004 <- (df_data_fr_2021$dc[length(df_data_fr_2022$dc)] - df_data_fr_2021$dc[1]) %>% as.character()
+  
+# 2020
+nb_hosp_005 <- sum(df_data_fr_2020$hosp) %>% as.character()
+nb_rea_005 <- sum(df_data_fr_2021$rea) %>% as.character()
+nb_dc_005 <- (df_data_fr_2020$dc[length(df_data_fr_2020$dc)] - df_data_fr_2020$dc[1]) %>% as.character()
+
+# 3 - Construction des graphiques généraux ------------------------------------#
    # - # Bilan global================
         # Main page =================
 graph_gen_hosp_001 <- Affiche_all_hosp_periode(df_data_fr)
@@ -85,7 +129,55 @@ library(shiny)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
+  
+  # 2 - Construction des textes -----------------------------------------------#
+  # == # Toutes pages
+  output$Titre_nb_hosp_001 <- renderText(Titre_nb_hosp_001)
+  output$Titre_nb_rea_001 <- renderText(Titre_nb_rea_001)
+  output$Titre_nb_dc_001 <- renderText(Titre_nb_dc_001)
+  
+  output$Titre_nb_hosp_002 <- renderText(Titre_nb_hosp_002)
+  output$Titre_nb_rea_002 <- renderText(Titre_nb_rea_002)
+  output$Titre_nb_dc_002 <- renderText(Titre_nb_dc_002)
+  
+  # == # Page bilan
+  output$Titre_gen_recap_001 <- renderText(Titre_gen_recap_001)
+  output$Titre_gen_recap_002 <- renderText(Titre_gen_recap_002)
+  output$Titre_gen_recap_003 <- renderText(Titre_gen_recap_003)
+  output$Titre_gen_recap_004 <- renderText(Titre_gen_recap_004)
+  output$Titre_gen_recap_005 <- renderText(Titre_gen_recap_005)
+  
+  output$nb_hosp_001 <- renderText(nb_hosp_001)
+  output$nb_rea_001 <- renderText(nb_rea_001)
+  output$nb_dc_001 <- renderText(nb_dc_001)
+
+  output$nb_hosp_002 <- renderText(nb_hosp_002)
+  output$nb_rea_002 <- renderText(nb_rea_002)
+  output$nb_dc_002 <- renderText(nb_dc_002)
+  
+  output$nb_hosp_003 <- renderText(nb_hosp_003)
+  output$nb_rea_003 <- renderText(nb_rea_003)
+  output$nb_dc_003 <- renderText(nb_dc_003)
+  
+  output$nb_hosp_004 <- renderText(nb_hosp_004)
+  output$nb_rea_004 <- renderText(nb_rea_004)
+  output$nb_dc_004 <- renderText(nb_dc_004)
+  
+  output$nb_hosp_005 <- renderText(nb_hosp_005)
+  output$nb_rea_005 <- renderText(nb_rea_005)
+  output$nb_dc_005 <- renderText(nb_dc_005)
+  
+  
+  # == # Page parametrage
+  
+  # == # Page features
+  
+  # 3 - Construction des graphiques  ------------------------------------------#
+  # == # Page bilan
   output$graph_gen_hosp_001 <- renderPlot({graph_gen_hosp_001})
   output$graph_gen_dc_001 <- renderPlot({graph_gen_dc_001})
+  # == # Page parametrage
+  
+  # == # Page features
   
 })
