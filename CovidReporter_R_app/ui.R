@@ -28,7 +28,8 @@ shinyUI(fluidPage(
   navbarPage(
     title="Covid Reporter",
     #==# Premier espace #====================================================#
-    tabPanel("Bilan Global", {
+    tabPanel("Bilan Global", 
+      
       sidebarLayout(sidebarPanel(
         #--# Side panel (bouton de parametrage #-----------------------------#)
         h3("CHIFFRES CLEFS",align = "center"),
@@ -69,20 +70,24 @@ shinyUI(fluidPage(
           textOutput(outputId = "nb_dc_004")
         ),
       ),
-        
       mainPanel(
+        
         #--# Main panel (Affichage graphique #-------------------------------#)
         h1("BILAN GENERALE",align="center"),
         verticalLayout(
             ),
         verticalLayout(
-              plotOutput(outputId = "graph_gen_hosp_001"),
-              plotOutput(outputId = "graph_gen_dc_001")
+              plotOutput(outputId = "graph_gen_hosp_001",
+                         width = "900px",
+                         height = "500px",),
+              plotOutput(outputId = "graph_gen_dc_001",
+                         width = "900px",
+                         height = "500px",)
             )
         
         )# end mainPanel
-      ) # end sidebarPanel
-      }),
+      ) # end sidebarLayout
+      ),
     
     #==# Deuxième espace #====================================================#
     tabPanel("Bilan detaille", {
