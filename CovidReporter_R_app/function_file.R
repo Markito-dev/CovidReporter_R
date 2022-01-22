@@ -146,7 +146,69 @@ Filtre_departement <- function(dataframe, liste_dep = "all") {
 
 
 
-# Affiche_dc_periode ----------------------------------------------------------#
+# Affiche_hosp_periode --------------------------------------------------------#
+
+Affiche_hosp_periode <- function(dataframe, deb_date = as.Date("2019-12-31"), end_date = as.Date("2100-12-31"),secteur_str = "autres" ) {
+  sprintf("Period of analysis: %s -> %s",as.character.Date(deb_date),as.character.Date(end_date))
+  
+  #Filter part#
+  df_filtered<-dataframe %>% filter((as.Date(jour) <= end_date) & (as.Date(jour) >= deb_date))
+  date_min = min(as.character.Date(df_filtered$jour))
+  date_max = max(as.character.Date(df_filtered$jour))
+  
+  #traitement des entr?e ( secteur )#
+  if (secteur_str == "autres") {secteur <- df_filtered$autres}
+  else if(secteur_str =="hospitalisation"){ secteur <- df_filtered$hosp}
+  else if(secteur_str =="reanimation"){ secteur <- df_filtered$rea}
+  else if(secteur_str == "Conventionelle"){ secteur <- df_filtered$HospConv}
+  else if(secteur_str == "SSR_USLD"){secteur <- df_filtered$SSR_USLD}
+  
+  
+  
+  #Graphic part#
+  # Construction du titre
+  title_label = paste("Nombre de personne affect� au service '",secteur_str,"' dans les territoires francais\n du",
+                      as.character.Date(date_min),
+                      " au ",
+                      as.character.Date(date_max))
+  # Initialisation du graphique
+  graph <- ggplot() +
+    
+    # Edition du titre
+    ggtitle(label = title_label)+
+    
+    # # Edition des paramètres titre/legend
+    theme(
+      plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(color = "#364167", hjust = 0.5),
+      legend.position="bottom"
+    )+
+    # Edition des labels (ordonnées/abscisse)
+    xlab("Date") + ylab("Nombre d'hospitalisation") +
+    
+    # Affichage des areas plot consernant les différents services
+    geom_area(aes(x= as.Date(df_filtered$jour) ,y = secteur, color = secteur_str, fill = secteur_str), alpha=0.4)+ 
+    # geom_area(aes(y = hosp, color = "total", fill = "total"), alpha=0.1)+ 
+    # geom_area(aes(y = HospConv+SSR_USLD+autres, color = "conventionnelle", fill = "conventionnelle"), alpha=0.3)+
+    # geom_area(aes(y = SSR_USLD+autres, color = "SSR_ou_USLD", fill = "SSR_ou_USLD"), alpha=0.4)+
+    # geom_area(aes(y = autres, color = "autres", fill = "autres"), alpha=0.5)+
+    
+    # Paramétrage des couleurs des area plot et de la légende
+    scale_color_manual("Hospitalisation", values=c(hospitalisation="#457b9d",
+                                                   reanimation ="#e76f51",
+                                                   conventionnelle = "#fcbf49",
+                                                   SSR_USLD = "#588157" ,
+                                                   autres = "#faedcd")) +  
+    scale_fill_manual("Hospitalisation", values=c( hospitalisation="#457b9d",
+                                                   reanimation ="#e76f51",
+                                                   conventionnelle = "#fcbf49",
+                                                   SSR_USLD = "#588157" ,
+                                                   autres = "#faedcd"))
+  
+  return(graph)
+  
+}
+
 
 
 

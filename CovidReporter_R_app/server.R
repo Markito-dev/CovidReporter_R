@@ -75,6 +75,18 @@ Titre_nb_hosp_002 <- "Bilan total d'hospitalisation:"
 Titre_nb_rea_002 <- "Bilan total de personne en réanimation:"
 Titre_nb_dc_002 <- "Bilan total de décès liée au Covid19:"
 
+Titre_nb_hosp_003 <- Titre_nb_hosp_002
+Titre_nb_rea_003 <- Titre_nb_rea_002
+Titre_nb_dc_003 <- Titre_nb_dc_002
+
+Titre_nb_hosp_004 <- Titre_nb_hosp_002
+Titre_nb_rea_004 <- Titre_nb_rea_002
+Titre_nb_dc_004 <- Titre_nb_dc_002
+
+Titre_nb_hosp_005 <- Titre_nb_hosp_002
+Titre_nb_rea_005 <- Titre_nb_rea_002
+Titre_nb_dc_005 <- Titre_nb_dc_002
+
 Today <- max(as.character.Date(df_data_fr$jour))
 Yesterday <- paste(format(as.Date(Today),"%Y-%m"),sep="")
 Titre_gen_recap_001 <- paste("Aujourd'hui :", Today )
@@ -140,6 +152,19 @@ shinyServer(function(input, output) {
   output$Titre_nb_rea_002 <- renderText(Titre_nb_rea_002)
   output$Titre_nb_dc_002 <- renderText(Titre_nb_dc_002)
   
+  output$Titre_nb_hosp_003 <- renderText(Titre_nb_hosp_003)
+  output$Titre_nb_rea_003 <- renderText(Titre_nb_rea_003)
+  output$Titre_nb_dc_003 <- renderText(Titre_nb_dc_003)
+  
+  output$Titre_nb_hosp_004 <- renderText(Titre_nb_hosp_004)
+  output$Titre_nb_rea_004 <- renderText(Titre_nb_rea_004)
+  output$Titre_nb_dc_004 <- renderText(Titre_nb_dc_004)
+  
+  output$Titre_nb_hosp_005 <- renderText(Titre_nb_hosp_005)
+  output$Titre_nb_rea_005 <- renderText(Titre_nb_rea_005)
+  output$Titre_nb_dc_005 <- renderText(Titre_nb_dc_005)
+  
+  
   # == # Page bilan
   output$Titre_gen_recap_001 <- renderText(Titre_gen_recap_001)
   output$Titre_gen_recap_002 <- renderText(Titre_gen_recap_002)
@@ -166,8 +191,6 @@ shinyServer(function(input, output) {
   output$nb_hosp_005 <- renderText(nb_hosp_005)
   output$nb_rea_005 <- renderText(nb_rea_005)
   output$nb_dc_005 <- renderText(nb_dc_005)
-  
-  
   # == # Page parametrage
   
   # == # Page features
@@ -176,8 +199,27 @@ shinyServer(function(input, output) {
   # == # Page bilan
   output$graph_gen_hosp_001 <- renderPlot({graph_gen_hosp_001})
   output$graph_gen_dc_001 <- renderPlot({graph_gen_dc_001})
+  
   # == # Page parametrage
+  output$graph_mod_hosp_001 <- renderPlot({Affiche_hosp_periode(df_data_fr,input$date_de_debut,input$date_de_fin,input$choix_graphe)})
+  output$graph_mod_dc_001 <- renderPlot({Affiche_dc_periode(df_data_fr,input$date_de_debut_dc,input$date_de_fin_dc)})
+  
   
   # == # Page features
+  
+  
+  # 3 - Construction des tableaux  ------------------------------------------#
+  output$CovidData_gen <-renderDataTable({df_data_fr})
+  
+  # 4 - Boutons de téléchargement -------------------------------------------#
+  #Bouton de téléchargement de la base de donnée générale#
+  output$downloadData_001 <- downloadHandler(
+      filename = function() {
+        paste("donnees_hospitalieres_covid19", ".csv", sep = "")
+      },
+      content = function(file) {
+        write.csv(df_data_fr, file, row.names = TRUE)
+      }
+  )
   
 })
