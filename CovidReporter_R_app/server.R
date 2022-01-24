@@ -15,11 +15,20 @@
 #install.packages("rvest")
 #install.packages("dplyr")
 #install.packages("ggplot2")
+#install.packages("shiny")
+#install.packages("leaflet")
+#install.packages("sf")
+#install.packages("stringr")
+#install.packages("readr")
 
 library(ggplot2)
 library(rvest)
 library(dplyr)
 library(shiny)
+library(leaflet)
+library(sf)
+library(stringr)
+library(readr)
 
 #==============================================================================#
 # ------------------------ Importing R function file --------------------------#
@@ -60,10 +69,26 @@ df_data_fr <- df_hebdo_covid %>% filter(df_hebdo_covid$sexe == 0) %>% group_by(j
 df_data_fr[is.na(df_data_fr)] <- 0
 df_data_fr
 
-# 1(bis) - On sépare les données par années pour afficher certains graphiques--#
+# 1.2 - On sépare les données par années pour afficher certains graphiques--#
 df_data_fr_2020<-df_data_fr %>% filter((as.Date(jour) < as.Date("2021-01-01")) & (as.Date(jour) > as.Date("2019-12-31")))
 df_data_fr_2021<-df_data_fr %>% filter((as.Date(jour) < as.Date("2022-01-01")) & (as.Date(jour) > as.Date("2020-12-31"))) 
 df_data_fr_2022<-df_data_fr %>% filter((as.Date(jour) < as.Date("2023-01-01")) & (as.Date(jour) > as.Date("2021-12-31"))) 
+
+
+# 1(bis)- Regroupement des données par jour et par departement sur l'ensemble du territoire français --#
+#    ps: Ici sexe=0 signifie que l'on fait aucune distinction de genre
+df_data_dep <- df_hebdo_covid %>% filter(df_hebdo_covid$sexe == 0) %>% group_by(jour,dep) %>% summarise(
+  hosp = sum(hosp),
+  rea = sum(rea),
+  HospConv = sum(HospConv),
+  SSR_USLD = sum(SSR_USLD),
+  autres = sum(autres),
+  dc = sum(dc)
+  )
+df_data_dep[is.na(df_data_dep)] <- 0
+df_data_dep
+
+
 
 # 2 - Construction des textes généraux ------------------------------------#
 
@@ -125,12 +150,12 @@ nb_dc_005 <- (df_data_fr_2020$dc[length(df_data_fr_2020$dc)] - df_data_fr_2020$d
 # 3 - Construction des graphiques généraux ------------------------------------#
    # - # Bilan global================
         # Main page =================
-graph_gen_hosp_001 <- Affiche_all_hosp_periode(df_data_fr)
-#graph_gen_hosp_001 # Graph fonctionnel!
-
-graph_gen_dc_001 <- Affiche_dc_periode(df_data_fr)
-#output$graph_gen_dc_001 <- renderPlot({graph_gen_dc_001})
-#graph_gen_dc_001 # Graph fonctionnel!
+# graph_gen_hosp_001 <- Affiche_all_hosp_periode(df_data_fr)
+# #graph_gen_hosp_001 # Graph fonctionnel!
+# 
+# graph_gen_dc_001 <- Affiche_dc_periode(df_data_fr)
+# #output$graph_gen_dc_001 <- renderPlot({graph_gen_dc_001})
+# #graph_gen_dc_001 # Graph fonctionnel!
 
 
 
@@ -197,13 +222,15 @@ shinyServer(function(input, output) {
   
   # 3 - Construction des graphiques  ------------------------------------------#
   # == # Page bilan
-  output$graph_gen_hosp_001 <- renderPlot({graph_gen_hosp_001})
-  output$graph_gen_dc_001 <- renderPlot({graph_gen_dc_001})
+  output$graph_gen_hosp_001 <- renderPlot({Affiche_all_hosp_periode(Filtre_periode_pred(df_data_fr,input$choix_bilan_01))})
+  output$graph_gen_dc_001 <- renderPlot({Affiche_dc_periode(Filtre_periode_pred(df_data_fr,input$choix_bilan_02))})
   
   # == # Page parametrage
-  output$graph_mod_hosp_001 <- renderPlot({Affiche_hosp_periode(df_data_fr,input$date_de_debut,input$date_de_fin,input$choix_graphe)})
-  output$graph_mod_dc_001 <- renderPlot({Affiche_dc_periode(df_data_fr,input$date_de_debut_dc,input$date_de_fin_dc)})
-  
+  date1 <-reactive({input$DateRange[1]})
+  date2 <-reactive({input$DateRange[2]})
+  output$graph_mod_hosp_001 <- renderPlot({Affiche_hosp_periode(df_data_fr,date1(),date2(),input$choix_graphe)})
+  output$graph_mod_dc_001 <- renderPlot({Affiche_dc_periode(df_data_fr,date1(),date2())})
+  output$map_mod_serv_001 <- renderLeaflet({Affiche_carte_france(df_data_dep,date1(),date2(),input$choix_graphe)})
   
   # == # Page features
   

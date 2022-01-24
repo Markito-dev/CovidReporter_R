@@ -11,6 +11,8 @@
 #==============================================================================#
 library(shiny)
 library(colourpicker)
+library(leaflet)
+library(shinydashboard)
 
 #==============================================================================#
 # ---------------------------------- Textes -----------------------------------#
@@ -79,14 +81,19 @@ shinyUI(fluidPage(
       column(width = 7,
         
         #--# Main panel (Affichage graphique #-------------------------------#)
-        h1("BILAN GENERALE",align="center"),
+        h1("BILAN GENERAL",align="center"),
         tabsetPanel(
-          tabPanel("Hospitalisation", plotOutput(outputId = "graph_gen_hosp_001",
-                                      width = "800px",
-                                      height = "500px")), 
-          tabPanel("Décès", plotOutput(outputId = "graph_gen_dc_001",
-                                         width = "800px",
-                                         height = "500px")), 
+          tabPanel("Hospitalisation", radioButtons("choix_bilan_01","Type de bilan", c("Global","Ce mois","2022","2021","2020"), selected="Global",inline = TRUE),
+                                      plotOutput(outputId = "graph_gen_hosp_001",
+                                                            width = "800px",
+                                                            height = "500px")
+                                        
+                   ), 
+          tabPanel("Décès", radioButtons("choix_bilan_02","Type de bilan", c("Global","Ce mois","2022","2021","2020"), selected="Global",inline = TRUE),
+                                     plotOutput(outputId = "graph_gen_dc_001",
+                                                            width = "800px",
+                                                            height = "500px")
+                   ),
           tabPanel("Données", 
                    fluidRow(
                      column(width = 9,dataTableOutput(outputId ="CovidData_gen")),
@@ -100,22 +107,59 @@ shinyUI(fluidPage(
       ),
     #=========================================================================#
     #==# Deuxième espace #====================================================#
-    tabPanel("Bilan detaille", {
-      sidebarLayout(sidebarPanel(
-      #--# Side panel (bouton de parametrage #-----------------------------#)
-          dateInput("date_de_debut","date de debut",min=as.Date("2020-03-18"),max=Sys.Date(),value=as.Date("2020-03-18")),
-          dateInput("date_de_fin","date de fin",min=as.Date("2020-03-19"),max=Sys.Date(),value=Sys.Date()),# Sys.Date() défini la date d'aujourd'hui
-          selectInput("choix_graphe","choix", c("hospitalisation","reanimation","Conventionelle","SSR_USLD","autres"), selected="autres"),
-          dateInput("date_de_debut_dc","date de debut décès",min=as.Date("2020-03-18"),max=Sys.Date(),value=as.Date("2020-03-18")),
-          dateInput("date_de_fin_dc","date de fin décès",min=as.Date("2020-03-19"),max=Sys.Date(),value=Sys.Date())
-          ),
-      mainPanel(
-      #--# Main panel (Affichage graphique #-------------------------------#)
-          "Salut germaine!!!!",
-          plotOutput(outputId = "graph_mod_hosp_001"),
-          plotOutput(outputId = "graph_mod_dc_001"),
-          )
-      )}),
+    tabPanel("Bilan detaille", 
+             fluidRow(column(width = 4,
+                             h3("Parametres",align = "center"),
+                             dateRangeInput("DateRange", "Date range:",
+                                            start  = "2020-03-19",
+                                            end    = as.character.Date(Sys.Date()),
+                                            min    = "2020-03-18",
+                                            max    = as.character.Date(Sys.Date())
+                                            ),
+                             # dateInput("date_de_debut","date de debut",min=as.Date("2020-03-18"),max=Sys.Date(),value=as.Date("2020-03-18")),
+                             # dateInput("date_de_fin","date de fin",min=as.Date("2020-03-19"),max=Sys.Date(),value=Sys.Date()),# Sys.Date() défini la date d'aujourd'hui
+                             radioButtons("choix_graphe","choix", c("Hospitalisation","Reanimation","Conventionnelle","SSR_USLD","Autres"), selected="Reanimation"),
+                             
+                            ),
+                      column(width = 7,
+                             
+                             #--# Main panel (Affichage graphique #-------------------------------#)
+                             h1("GRAPHIQUES",align="center"),
+                             tabsetPanel(
+                                           tabPanel("Hospitalisations", plotOutput(outputId = "graph_mod_hosp_001",
+                                                               width = "800px",
+                                                               height = "500px")
+                                                    
+                                                    ), 
+                                           tabPanel("Décès",plotOutput(outputId = "graph_mod_dc_001",
+                                                               width = "800px",
+                                                               height = "500px")
+                                                    ),
+                                           tabPanel("Carte", leafletOutput("map_mod_serv_001") )
+                                        )
+                             
+                              )#End column
+                      )#End FluidRow
+            ),#End tabPanel
+             
+      #        {
+      # sidebarLayout(sidebarPanel(
+      # #--# Side panel (bouton de parametrage #-----------------------------#)
+      #     dateInput("date_de_debut","date de debut",min=as.Date("2020-03-18"),max=Sys.Date(),value=as.Date("2020-03-18")),
+      #     dateInput("date_de_fin","date de fin",min=as.Date("2020-03-19"),max=Sys.Date(),value=Sys.Date()),# Sys.Date() défini la date d'aujourd'hui
+      #     radioButtons("choix_graphe","choix", c("Hospitalisation","Reanimation","Conventionnelle","SSR_USLD","Autres"), selected="Reanimation"),
+      #     dateInput("date_de_debut_dc","date de debut décès",min=as.Date("2020-03-18"),max=Sys.Date(),value=as.Date("2020-03-18")),
+      #     dateInput("date_de_fin_dc","date de fin décès",min=as.Date("2020-03-19"),max=Sys.Date(),value=Sys.Date())
+      #     ),
+      # mainPanel(
+      # #--# Main panel (Affichage graphique #-------------------------------#)
+      #     "Salut germaine!!!!",
+      #     plotOutput(outputId = "graph_mod_hosp_001"),
+      #     plotOutput(outputId = "graph_mod_dc_001"),
+      #     leafletOutput("map_mod_serv_001")
+      #     )
+      # )}
+      # ), 
     
     #=========================================================================#
     #==# Troisième espace #===================================================#
