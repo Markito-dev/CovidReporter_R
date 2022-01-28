@@ -116,8 +116,6 @@ shinyUI(fluidPage(
                                             min    = "2020-03-18",
                                             max    = as.character.Date(Sys.Date())
                                             ),
-                             # dateInput("date_de_debut","date de debut",min=as.Date("2020-03-18"),max=Sys.Date(),value=as.Date("2020-03-18")),
-                             # dateInput("date_de_fin","date de fin",min=as.Date("2020-03-19"),max=Sys.Date(),value=Sys.Date()),# Sys.Date() défini la date d'aujourd'hui
                              radioButtons("choix_graphe","choix", c("Hospitalisation","Reanimation","Conventionnelle","SSR_USLD","Autres"), selected="Reanimation"),
                              
                             ),
@@ -141,25 +139,6 @@ shinyUI(fluidPage(
                               )#End column
                       )#End FluidRow
             ),#End tabPanel
-             
-      #        {
-      # sidebarLayout(sidebarPanel(
-      # #--# Side panel (bouton de parametrage #-----------------------------#)
-      #     dateInput("date_de_debut","date de debut",min=as.Date("2020-03-18"),max=Sys.Date(),value=as.Date("2020-03-18")),
-      #     dateInput("date_de_fin","date de fin",min=as.Date("2020-03-19"),max=Sys.Date(),value=Sys.Date()),# Sys.Date() défini la date d'aujourd'hui
-      #     radioButtons("choix_graphe","choix", c("Hospitalisation","Reanimation","Conventionnelle","SSR_USLD","Autres"), selected="Reanimation"),
-      #     dateInput("date_de_debut_dc","date de debut décès",min=as.Date("2020-03-18"),max=Sys.Date(),value=as.Date("2020-03-18")),
-      #     dateInput("date_de_fin_dc","date de fin décès",min=as.Date("2020-03-19"),max=Sys.Date(),value=Sys.Date())
-      #     ),
-      # mainPanel(
-      # #--# Main panel (Affichage graphique #-------------------------------#)
-      #     "Salut germaine!!!!",
-      #     plotOutput(outputId = "graph_mod_hosp_001"),
-      #     plotOutput(outputId = "graph_mod_dc_001"),
-      #     leafletOutput("map_mod_serv_001")
-      #     )
-      # )}
-      # ), 
     
     #=========================================================================#
     #==# Troisième espace #===================================================#

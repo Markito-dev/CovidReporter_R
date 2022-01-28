@@ -11,6 +11,7 @@
 #install.packages("sf")
 #install.packages("stringr")
 #install.packages("readr")
+#install.packages("tmap")
 
 library(ggplot2)
 library(rvest)
@@ -20,6 +21,7 @@ library(stringr)
 library(readr)
 library(leaflet)
 library(sf)
+
 
 #==============================================================================#
 # ---------------------------------- Functions --------------------------------#
@@ -239,9 +241,6 @@ Affiche_hosp_periode <- function(dataframe, deb_date = as.Date("2019-12-31"), en
   
 }
 
-
-
-
 # Affiche_carte_france --------------------------------------------------------#
 
 Affiche_carte_france <- function(dataframe, deb_date = as.Date("2019-12-31"), end_date = as.Date("2100-12-31"),secteur_str = "Hospitalisation" ) {
@@ -303,10 +302,12 @@ Affiche_carte_france <- function(dataframe, deb_date = as.Date("2019-12-31"), en
   
   map_dep <- leaflet() %>%
     addTiles() %>%
+    addProviderTiles("Esri.WorldGrayCanvas")%>%
     # polygone des regions
     addPolygons(
       data = carte_dep, 
       label = ~nom,
+      weight = 1,
       # popup = ~paste0("Densité : ", round(density), " hab/km2"), 
       fill = TRUE, 
       # Application de la fonction palette_gen

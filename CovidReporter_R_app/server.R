@@ -147,18 +147,6 @@ nb_hosp_005 <- sum(df_data_fr_2020$hosp) %>% as.character()
 nb_rea_005 <- sum(df_data_fr_2021$rea) %>% as.character()
 nb_dc_005 <- (df_data_fr_2020$dc[length(df_data_fr_2020$dc)] - df_data_fr_2020$dc[1]) %>% as.character()
 
-# 3 - Construction des graphiques généraux ------------------------------------#
-   # - # Bilan global================
-        # Main page =================
-# graph_gen_hosp_001 <- Affiche_all_hosp_periode(df_data_fr)
-# #graph_gen_hosp_001 # Graph fonctionnel!
-# 
-# graph_gen_dc_001 <- Affiche_dc_periode(df_data_fr)
-# #output$graph_gen_dc_001 <- renderPlot({graph_gen_dc_001})
-# #graph_gen_dc_001 # Graph fonctionnel!
-
-
-
 #==============================================================================#
 # ---------------------------------- Serveur ----------------------------------#
 #==============================================================================#
