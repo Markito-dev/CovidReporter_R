@@ -36,125 +36,146 @@ library(readr)
 
 source("function_file.R")
 
-#==============================================================================#
-# ------------------------------- Web Scrapping -------------------------------#
-#==============================================================================#
-url <- "https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/"
-download.file(url = url, "datagouv.html")
-html <- read_html("datagouv.html")
-html_c <- html_children(html)
-html_wanted <- html %>% html_nodes('.card-body')
-pos <- Position(x = html_wanted, f = function(x){ grepl("donnees-hospitalieres-covid19",html_text(x))})
-html_wanted2 <- html_wanted[pos] %>% html_nodes('a') %>% html_attr('href')
-l_html = length(html_wanted2)
-link <- html_wanted2[l_html-1]
-
-df_hebdo_covid <- read.csv(link, sep=";")
-head(df_hebdo_covid,10)
-
-
-#==============================================================================#
-# ------------------------- Traitement des données --------------------------- #
-#==============================================================================#
-# 1- Regroupement des données par jour sur l'ensemble du territoire français --#
-#    ps: Ici sexe=0 signifie que l'on fait aucune distinction de genre
-df_data_fr <- df_hebdo_covid %>% filter(df_hebdo_covid$sexe == 0) %>% group_by(jour) %>% summarise(
-  hosp = sum(hosp),
-  rea = sum(rea),
-  HospConv = sum(HospConv),
-  SSR_USLD = sum(SSR_USLD),
-  autres = sum(autres),
-  dc = sum(dc)
-)
-df_data_fr[is.na(df_data_fr)] <- 0
-df_data_fr
-
-# 1.2 - On sépare les données par années pour afficher certains graphiques--#
-df_data_fr_2020<-df_data_fr %>% filter((as.Date(jour) < as.Date("2021-01-01")) & (as.Date(jour) > as.Date("2019-12-31")))
-df_data_fr_2021<-df_data_fr %>% filter((as.Date(jour) < as.Date("2022-01-01")) & (as.Date(jour) > as.Date("2020-12-31"))) 
-df_data_fr_2022<-df_data_fr %>% filter((as.Date(jour) < as.Date("2023-01-01")) & (as.Date(jour) > as.Date("2021-12-31"))) 
-
-
-# 1(bis)- Regroupement des données par jour et par departement sur l'ensemble du territoire français --#
-#    ps: Ici sexe=0 signifie que l'on fait aucune distinction de genre
-df_data_dep <- df_hebdo_covid %>% filter(df_hebdo_covid$sexe == 0) %>% group_by(jour,dep) %>% summarise(
-  hosp = sum(hosp),
-  rea = sum(rea),
-  HospConv = sum(HospConv),
-  SSR_USLD = sum(SSR_USLD),
-  autres = sum(autres),
-  dc = sum(dc)
-  )
-df_data_dep[is.na(df_data_dep)] <- 0
-df_data_dep
-
-
-
-# 2 - Construction des textes généraux ------------------------------------#
-
-Titre_nb_hosp_001 <- "Nombre de personne en hospitalisation:"
-Titre_nb_rea_001 <- "Nombre de personne en réanimation:"
-Titre_nb_dc_001 <- "Nombre de deces liee au Covid19:"
-
-Titre_nb_hosp_002 <- "Bilan total d'hospitalisation:"
-Titre_nb_rea_002 <- "Bilan total de personne en réanimation:"
-Titre_nb_dc_002 <- "Bilan total de décès liée au Covid19:"
-
-Titre_nb_hosp_003 <- Titre_nb_hosp_002
-Titre_nb_rea_003 <- Titre_nb_rea_002
-Titre_nb_dc_003 <- Titre_nb_dc_002
-
-Titre_nb_hosp_004 <- Titre_nb_hosp_002
-Titre_nb_rea_004 <- Titre_nb_rea_002
-Titre_nb_dc_004 <- Titre_nb_dc_002
-
-Titre_nb_hosp_005 <- Titre_nb_hosp_002
-Titre_nb_rea_005 <- Titre_nb_rea_002
-Titre_nb_dc_005 <- Titre_nb_dc_002
-
-Today <- max(as.character.Date(df_data_fr$jour))
-Yesterday <- paste(format(as.Date(Today),"%Y-%m"),sep="")
-Titre_gen_recap_001 <- paste("Aujourd'hui :", Today )
-Titre_gen_recap_002 <- paste("Ce mois :", toupper(format(as.Date(Today),"%B")) )
-Titre_gen_recap_003 <- paste("Bilan de l'année 2022 :")
-Titre_gen_recap_004 <- paste("Bilan de l'année 2021 :")
-Titre_gen_recap_005 <- paste("Bilan de l'année 2020 :")
-
-# A ce jour
-nb_hosp_001 <- df_data_fr %>% filter(df_data_fr$jour == Today) %>% select(hosp) %>% as.character()
-nb_rea_001 <- df_data_fr %>% filter(df_data_fr$jour == Today) %>% select(rea) %>% as.character()
-nb_dc_001 <- df_data_fr %>% filter(df_data_fr$jour == Today) %>% select(dc)
-nb_dc_001 <- (nb_dc_001 - df_data_fr$dc[length(df_data_fr$dc)-1]) %>% as.character()
-  
-# Ce mois
-nb_hosp_002 <- df_data_fr %>% filter(format(as.Date(df_data_fr$jour),"%Y-%m") == format(as.Date(Today),"%Y-%m")) %>% select(hosp) %>% sum() %>% as.character()
-nb_rea_002 <- df_data_fr %>% filter(format(as.Date(df_data_fr$jour),"%Y-%m") == format(as.Date(Today),"%Y-%m")) %>% select(rea) %>% sum() %>% as.character()
-nb_dc_002 <- df_data_fr %>% filter(format(as.Date(df_data_fr$jour),"%Y-%m") == format(as.Date(Today),"%Y-%m")) 
-nb_dc_002 <- (nb_dc_002$dc[length(nb_dc_002$dc)] - nb_dc_002$dc[1]) %>% as.character()
-
-# 2022
-nb_hosp_003 <- sum(df_data_fr_2022$hosp) %>% as.character()
-nb_rea_003 <- sum(df_data_fr_2022$rea) %>% as.character()
-nb_dc_003 <- (df_data_fr_2022$dc[length(df_data_fr_2022$dc)] - df_data_fr_2022$dc[1]) %>% as.character()
-  
-# 2021
-nb_hosp_004 <- sum(df_data_fr_2021$hosp) %>% as.character()
-nb_rea_004 <- sum(df_data_fr_2021$rea) %>% as.character()
-nb_dc_004 <- (df_data_fr_2021$dc[length(df_data_fr_2022$dc)] - df_data_fr_2021$dc[1]) %>% as.character()
-  
-# 2020
-nb_hosp_005 <- sum(df_data_fr_2020$hosp) %>% as.character()
-nb_rea_005 <- sum(df_data_fr_2021$rea) %>% as.character()
-nb_dc_005 <- (df_data_fr_2020$dc[length(df_data_fr_2020$dc)] - df_data_fr_2020$dc[1]) %>% as.character()
 
 #==============================================================================#
 # ---------------------------------- Serveur ----------------------------------#
 #==============================================================================#
-library(shiny)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
   
+  # Create a Progress object
+  progress <- shiny::Progress$new()
+  # Make sure it closes when we exit this reactive, even if there's an error
+  on.exit(progress$close())
+  
+  progress$set(message = "Chargement des données", value = 0)
+  
+  # Increment the progress bar, and update the detail text.
+  progress$inc(1/10, detail = "Web scrapping sur data.gouv ...")
+  #==============================================================================#
+  # ------------------------------- Web Scrapping -------------------------------#
+  #==============================================================================#
+  url <- "https://www.data.gouv.fr/fr/datasets/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/"
+  download.file(url = url, "datagouv.html")
+  html <- read_html("datagouv.html")
+  html_c <- html_children(html)
+  html_wanted <- html %>% html_nodes('.card-body')
+  pos <- Position(x = html_wanted, f = function(x){ grepl("donnees-hospitalieres-covid19",html_text(x))})
+  html_wanted2 <- html_wanted[pos] %>% html_nodes('a') %>% html_attr('href')
+  l_html = length(html_wanted2)
+  link <- html_wanted2[l_html-1]
+  
+  # Increment the progress bar, and update the detail text.
+  progress$inc(1/5, detail = "Lecture des tables de données ...")
+  df_hebdo_covid <- read.csv(link, sep=";")
+  head(df_hebdo_covid,10)
+  
+  
+  #==============================================================================#
+  # ------------------------- Traitement des données --------------------------- #
+  #==============================================================================#
+  # 1- Regroupement des données par jour sur l'ensemble du territoire français --#
+  #    ps: Ici sexe=0 signifie que l'on fait aucune distinction de genre
+  
+  # Increment the progress bar, and update the detail text.
+  progress$inc(2/5, detail = "Traitement des données ...")
+  
+  df_data_fr <- df_hebdo_covid %>% filter(df_hebdo_covid$sexe == 0) %>% group_by(jour) %>% summarise(
+    hosp = sum(hosp),
+    rea = sum(rea),
+    HospConv = sum(HospConv),
+    SSR_USLD = sum(SSR_USLD),
+    autres = sum(autres),
+    dc = sum(dc)
+  )
+  df_data_fr[is.na(df_data_fr)] <- 0
+  df_data_fr
+  
+  # 1.2 - On sépare les données par années pour afficher certains graphiques--#
+  df_data_fr_2020<-df_data_fr %>% filter((as.Date(jour) < as.Date("2021-01-01")) & (as.Date(jour) > as.Date("2019-12-31")))
+  df_data_fr_2021<-df_data_fr %>% filter((as.Date(jour) < as.Date("2022-01-01")) & (as.Date(jour) > as.Date("2020-12-31"))) 
+  df_data_fr_2022<-df_data_fr %>% filter((as.Date(jour) < as.Date("2023-01-01")) & (as.Date(jour) > as.Date("2021-12-31"))) 
+  
+  
+  # 1(bis)- Regroupement des données par jour et par departement sur l'ensemble du territoire français --#
+  #    ps: Ici sexe=0 signifie que l'on fait aucune distinction de genre
+  df_data_dep <- df_hebdo_covid %>% filter(df_hebdo_covid$sexe == 0) %>% group_by(jour,dep) %>% summarise(
+    hosp = sum(hosp),
+    rea = sum(rea),
+    HospConv = sum(HospConv),
+    SSR_USLD = sum(SSR_USLD),
+    autres = sum(autres),
+    dc = sum(dc)
+  )
+  df_data_dep[is.na(df_data_dep)] <- 0
+  df_data_dep
+  
+  
+  
+  # 2 - Construction des textes généraux ------------------------------------#
+  
+  Titre_nb_hosp_001 <- "Nombre de personne en hospitalisation:"
+  Titre_nb_rea_001 <- "Nombre de personne en réanimation:"
+  Titre_nb_dc_001 <- "Nombre de décès liee au Covid19:"
+  
+  Titre_nb_hosp_002 <- "Nombre d'hospitalisation:"
+  Titre_nb_rea_002 <- "Bilan total de personne en réanimation:"
+  Titre_nb_dc_002 <- "Bilan total de décès liée au Covid19:"
+  
+  Titre_nb_hosp_003 <- Titre_nb_hosp_002
+  Titre_nb_rea_003 <- Titre_nb_rea_002
+  Titre_nb_dc_003 <- Titre_nb_dc_002
+  
+  Titre_nb_hosp_004 <- Titre_nb_hosp_002
+  Titre_nb_rea_004 <- Titre_nb_rea_002
+  Titre_nb_dc_004 <- Titre_nb_dc_002
+  
+  Titre_nb_hosp_005 <- Titre_nb_hosp_002
+  Titre_nb_rea_005 <- Titre_nb_rea_002
+  Titre_nb_dc_005 <- Titre_nb_dc_002
+  
+  Today <- max(as.character.Date(df_data_fr$jour))
+  Yesterday <- paste(format(as.Date(Today),"%Y-%m"),sep="")
+  Titre_gen_recap_001 <- paste("Aujourd'hui :", Today )
+  Titre_gen_recap_002 <- paste("Ce mois :", toupper(format(as.Date(Today),"%B")) )
+  Titre_gen_recap_003 <- paste("Bilan de l'année 2022 :")
+  Titre_gen_recap_004 <- paste("Bilan de l'année 2021 :")
+  Titre_gen_recap_005 <- paste("Bilan de l'année 2020 :")
+  
+  # A ce jour
+  nb_hosp_001 <- df_data_fr %>% filter(df_data_fr$jour == Today) %>% select(hosp) %>% as.character()
+  nb_rea_001 <- df_data_fr %>% filter(df_data_fr$jour == Today) %>% select(rea) %>% as.character()
+  nb_dc_001 <- df_data_fr %>% filter(df_data_fr$jour == Today) %>% select(dc)
+  nb_dc_001 <- (nb_dc_001 - df_data_fr$dc[length(df_data_fr$dc)-1]) %>% as.character()
+  
+  # Ce mois
+  nb_hosp_002 <- df_data_fr %>% filter(format(as.Date(df_data_fr$jour),"%Y-%m") == format(as.Date(Today),"%Y-%m")) %>% select(hosp) %>% sum() %>% as.character()
+  nb_rea_002 <- df_data_fr %>% filter(format(as.Date(df_data_fr$jour),"%Y-%m") == format(as.Date(Today),"%Y-%m")) %>% select(rea) %>% sum() %>% as.character()
+  nb_dc_002 <- df_data_fr %>% filter(format(as.Date(df_data_fr$jour),"%Y-%m") == format(as.Date(Today),"%Y-%m")) 
+  nb_dc_002 <- (nb_dc_002$dc[length(nb_dc_002$dc)] - nb_dc_002$dc[1]) %>% as.character()
+  
+  # 2022
+  nb_hosp_003 <- sum(df_data_fr_2022$hosp) %>% as.character()
+  nb_rea_003 <- sum(df_data_fr_2022$rea) %>% as.character()
+  nb_dc_003 <- (df_data_fr_2022$dc[length(df_data_fr_2022$dc)] - df_data_fr_2022$dc[1]) %>% as.character()
+  
+  # 2021
+  nb_hosp_004 <- sum(df_data_fr_2021$hosp) %>% as.character()
+  nb_rea_004 <- sum(df_data_fr_2021$rea) %>% as.character()
+  nb_dc_004 <- (df_data_fr_2021$dc[length(df_data_fr_2022$dc)] - df_data_fr_2021$dc[1]) %>% as.character()
+  
+  # 2020
+  nb_hosp_005 <- sum(df_data_fr_2020$hosp) %>% as.character()
+  nb_rea_005 <- sum(df_data_fr_2021$rea) %>% as.character()
+  nb_dc_005 <- (df_data_fr_2020$dc[length(df_data_fr_2020$dc)] - df_data_fr_2020$dc[1]) %>% as.character()
+  
+  #==============================================================================#
+  # ----------------------------------- Output ----------------------------------#
+  #==============================================================================#
+  
+  # Increment the progress bar, and update the detail text.
+  progress$inc(1/10, detail = "Génération de la page bilan ...")
   # 2 - Construction des textes -----------------------------------------------#
   # == # Toutes pages
   output$Titre_nb_hosp_001 <- renderText(Titre_nb_hosp_001)
@@ -188,7 +209,7 @@ shinyServer(function(input, output) {
   output$nb_hosp_001 <- renderText(nb_hosp_001)
   output$nb_rea_001 <- renderText(nb_rea_001)
   output$nb_dc_001 <- renderText(nb_dc_001)
-
+  
   output$nb_hosp_002 <- renderText(nb_hosp_002)
   output$nb_rea_002 <- renderText(nb_rea_002)
   output$nb_dc_002 <- renderText(nb_dc_002)
@@ -214,6 +235,9 @@ shinyServer(function(input, output) {
   output$graph_gen_dc_001 <- renderPlot({Affiche_dc_periode(Filtre_periode_pred(df_data_fr,input$choix_bilan_02))})
   
   # == # Page parametrage
+  # Increment the progress bar, and update the detail text.
+  progress$inc(1/10, detail = "Génération de la page parametrable ...")
+  
   date1 <-reactive({input$DateRange[1]})
   date2 <-reactive({input$DateRange[2]})
   output$graph_mod_hosp_001 <- renderPlot({Affiche_hosp_periode(df_data_fr,date1(),date2(),input$choix_graphe)})
@@ -229,12 +253,13 @@ shinyServer(function(input, output) {
   # 4 - Boutons de téléchargement -------------------------------------------#
   #Bouton de téléchargement de la base de donnée générale#
   output$downloadData_001 <- downloadHandler(
-      filename = function() {
-        paste("donnees_hospitalieres_covid19", ".csv", sep = "")
-      },
-      content = function(file) {
-        write.csv(df_data_fr, file, row.names = TRUE)
-      }
+    filename = function() {
+      paste("donnees_hospitalieres_covid19", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(df_data_fr, file, row.names = TRUE)
+    }
   )
-  
+  progress$set(message = "Terminé !", value = 1)
+  progress$close()
 })

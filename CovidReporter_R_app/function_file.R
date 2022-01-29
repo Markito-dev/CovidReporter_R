@@ -69,7 +69,7 @@ Affiche_all_hosp_periode <- function(dataframe, deb_date = as.Date("2019-12-31")
   graph <- ggplot(df_filtered, aes(x=as.Date(jour))) + 
     
     # Edition du titre
-    ggtitle(label = title_label, subtitle = "Repartition des hospitalisations par service")+
+    ggtitle(label = title_label, subtitle = "Répartition des hospitalisations par service")+
     
     # Edition des paramètres titre/legend
     theme(
